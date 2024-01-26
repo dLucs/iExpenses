@@ -7,11 +7,12 @@
 
 import SwiftUI
 
-// Create the expense item
-struct expenseItem{
+// Create the expense item that follows the Identifiable protocol
+struct expenseItem: Identifiable{
     let name: String
     let type: String
     let amount: Double
+    let id = UUID()
 }
 //Create expenses class
 @Observable
@@ -22,12 +23,13 @@ class Expenses {
 struct ContentView: View {
     
     @State private var expenses = Expenses()
+    @State private var showAddExpense = false
     
     var body: some View {
         NavigationStack {
             //Iterate over all the items in expenses
             List{
-                ForEach(expenses.items, id: \.name) {
+                ForEach(expenses.items) {
                     item in Text(item.name)
                 }
                 .onDelete(perform: removeItems)
@@ -36,9 +38,11 @@ struct ContentView: View {
             .toolbar{
                 //Add new expense item to expenses
                 Button("Add Expense", systemImage: "plus"){
-                    let expense  = expenseItem(name: "Test", type: "personal", amount: 6)
-                    expenses.items.append(expense)
+                    showAddExpense = true
                 }
+            }
+            .sheet(isPresented: $showAddExpense ){
+               AddView(expenses: expenses)
             }
         }
         
