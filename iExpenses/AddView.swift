@@ -12,6 +12,7 @@ struct AddView: View {
     @State private var name = ""
     @State private var type = "Personal"
     @State private var amount = 0.0
+    @Environment(\.dismiss) var dismiss
     
     var expenses: Expenses
     
@@ -26,7 +27,7 @@ struct AddView: View {
                         Text($0)
                     }
                 }
-                TextField("Amount", value: $amount, format: .currency(code: "USD"))
+                TextField("Amount", value: $amount, format: .currency(code: "EUR"))
                     .keyboardType(.decimalPad)
             }
             .navigationTitle("Add new expense")
@@ -34,6 +35,7 @@ struct AddView: View {
                 Button("Save"){
                     let item = expenseItem(name: name, type: type, amount: amount)
                     expenses.items.append(item)
+                    dismiss()
                 }
             }
         }

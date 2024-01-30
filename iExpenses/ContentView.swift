@@ -7,17 +7,33 @@
 
 import SwiftUI
 
-// Create the expense item that follows the Identifiable protocol
-struct expenseItem: Identifiable{
+// Create the expense item that follows the Identifiable and Codable protocol
+struct expenseItem: Identifiable, Codable{
     let name: String
     let type: String
     let amount: Double
-    let id = UUID()
+    var id = UUID()
 }
-//Create expenses class
+//Create expenses class with JSON encoder
 @Observable
 class Expenses {
-    var items = [expenseItem]()
+    var items = [expenseItem](){
+        didSet {
+            if let encoded =  try? JSONEncoder().encode(items){
+                UserDefaults.standard.set(encoded, forKey: "Items")
+                
+            }
+        }
+    }
+    init(){
+        if let savedItems = UserDefaults.standard.data(forKey: "Items") {
+            if let decodedItems = try? JSONDecoder().decode([expenseItem].self, from: savedItems){
+                items = decodedItems
+                return
+            }
+        }
+        items = []
+    }
 }
 
 struct ContentView: View {
@@ -30,7 +46,17 @@ struct ContentView: View {
             //Iterate over all the items in expenses
             List{
                 ForEach(expenses.items) {
-                    item in Text(item.name)
+                    item in HStack{
+                        VStack(alignment: .leading){
+                            Text(item.name)
+                                .font(.headline)
+                            
+                            item.type == "Personal" ?
+                            Text(item.type) .foregroundColor(.blue) : Text(item.type).foregroundColor(.orange)
+                        }
+                        Spacer()
+                        Text(item.amount, format: .currency(code: "EUR"))
+                    }
                 }
                 .onDelete(perform: removeItems)
             }
